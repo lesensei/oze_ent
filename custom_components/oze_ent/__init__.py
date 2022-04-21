@@ -1,11 +1,11 @@
 """
-Custom integration to integrate integration_blueprint with Home Assistant.
+Custom integration to integrate an oZe ENT with Home Assistant.
 
 For more details about this integration, please refer to
-https://github.com/custom-components/integration_blueprint
+https://github.com/lesensei/oze_ent
 """
 import asyncio
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -14,9 +14,10 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import IntegrationBlueprintApiClient
+from aioze import OzeApiClient
 
 from .const import (
+    CONF_URL,
     CONF_PASSWORD,
     CONF_USERNAME,
     DOMAIN,
@@ -24,7 +25,7 @@ from .const import (
     STARTUP_MESSAGE,
 )
 
-SCAN_INTERVAL = timedelta(seconds=30)
+SCAN_INTERVAL = timedelta(seconds=300)
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
@@ -40,11 +41,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.info(STARTUP_MESSAGE)
 
+    url = entry.data.get(CONF_URL)
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
 
     session = async_get_clientsession(hass)
-    client = IntegrationBlueprintApiClient(username, password, session)
+    client = OzeApiClient(url, username, password, session)
+    await client.connect()
 
     coordinator = BlueprintDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()
@@ -68,19 +71,36 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
-    def __init__(
-        self, hass: HomeAssistant, client: IntegrationBlueprintApiClient
-    ) -> None:
+    def __init__(self, hass: HomeAssistant, client: OzeApiClient) -> None:
         """Initialize."""
         self.api = client
         self.platforms = []
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
-    async def _async_update_data(self):
+    async def _async_update_data(self) -> dict:
         """Update data via library."""
+        user_info = await self.api.userinfo.get_user_info()
+        pupils = self.api.userinfo.get_pupils_from_userinfo(user_info)
+        pupil_data = {}
+        for pupil in pupils:
+            pupil_data[pupil["uid"]] = {
+                "homeworks": await self.api.homework.get_homework(pupil),
+                "punishments": await self.api.punishment.get_punishments(
+                    pupil=pupil, start_date=datetime.utcnow()
+                ),
+                "classes": await self.api.event.get_events(
+                    pupil=pupil, start_date=datetime.utcnow()
+                ),
+            }
         try:
-            return await self.api.async_get_data()
+            return {
+                "user_info": user_info,
+                "notifications": await self.api.notification.get_notifications(
+                    pupil=pupils[0]
+                ),
+                "notices": await self.api.information.get_informations(pupil=pupils[0]),
+            } | pupil_data
         except Exception as exception:
             raise UpdateFailed() from exception
 
