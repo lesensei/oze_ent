@@ -1,7 +1,7 @@
 {
     "name": "Oze ENT",
     "hacs": "0.0.1",
-    "domains": [*
+    "domains": [
         "calendar",
         "sensor"
     ],
