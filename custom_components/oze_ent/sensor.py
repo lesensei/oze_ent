@@ -100,6 +100,12 @@ class EndOfClassesSensor(OzeEntity, SensorEntity):
     def native_value(self):
         """Return the native value of the sensor."""
         classes = self.coordinator.data.get(self._pupil["uid"]).get("classes")
+        classes = list(
+            filter(
+                lambda cl: dt.parse_datetime(cl["dateFin"]).date() == dt.now().date(),
+                classes,
+            )
+        )
         classes.sort(key=lambda cl: cl["dateFin"], reverse=True)
 
         return dt.parse_datetime(classes[0]["dateFin"])
