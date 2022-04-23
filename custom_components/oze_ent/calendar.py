@@ -33,10 +33,12 @@ class OzeCalendarEntity(CalendarEntity):
 
     @property
     def unique_id(self) -> str | None:
+        """Return a unique id for this sensor"""
         return f"{DEFAULT_NAME}_{self._pupil['uid']}_{DOMAIN}"
 
     @property
     def name(self) -> str | None:
+        """Return a descriptive name for this sensor"""
         return f"{DEFAULT_NAME}_{self._pupil['first_name']}_{DOMAIN}"
 
     @property
@@ -62,7 +64,7 @@ class OzeCalendarEntity(CalendarEntity):
             filter(lambda event: nowtime <= parser.parse(event["dateFin"]), events)
         )
         events.sort(key=lambda event: event["dateDebut"])
-        self._event = _get_calendar_event(events[0])
+        self._event = _get_calendar_event(events[0]) if len(events) > 0 else None
 
 
 def _get_calendar_event(event: dict[str, Any]) -> CalendarEvent:

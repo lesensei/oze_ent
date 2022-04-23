@@ -96,10 +96,9 @@ class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             return {
                 "user_info": user_info,
-                "notifications": await self.api.notification.get_notifications(
-                    pupil=pupils[0]
-                ),
-                "notices": await self.api.information.get_informations(pupil=pupils[0]),
+                "notifications": await self.api.notification.get_notifications(),
+                "notices": await self.api.information.get_informations(),
+                "emails": await self.api.email.get_emails(),
             } | pupil_data
         except Exception as exception:
             raise UpdateFailed() from exception
