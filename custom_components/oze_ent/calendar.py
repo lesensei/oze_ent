@@ -33,17 +33,17 @@ class ClassesCalendarEntity(CalendarEntity):
         self._pupil = pupil
 
     @property
-    def unique_id(self) -> str | None:
+    def unique_id(self):
         """Return a unique id for this sensor"""
         return f"{DEFAULT_NAME}_{self._pupil['uid']}_classes"
 
     @property
-    def name(self) -> str | None:
+    def name(self):
         """Return a descriptive name for this sensor"""
         return f"{DEFAULT_NAME}_{self._pupil['first_name']}_classes"
 
     @property
-    def event(self) -> CalendarEvent | None:
+    def event(self):
         """Return the next upcoming class event."""
         return self._event
 
@@ -79,17 +79,17 @@ class PunishmentCalendarEntity(CalendarEntity):
         self._pupil = pupil
 
     @property
-    def unique_id(self) -> str | None:
+    def unique_id(self):
         """Return a unique id for this sensor"""
         return f"{DEFAULT_NAME}_{self._pupil['uid']}_punishments"
 
     @property
-    def name(self) -> str | None:
+    def name(self):
         """Return a descriptive name for this sensor"""
         return f"{DEFAULT_NAME}_{self._pupil['first_name']}_punishments"
 
     @property
-    def event(self) -> CalendarEvent | None:
+    def event(self):
         """Return the next upcoming punishment event."""
         return self._event
 
@@ -116,13 +116,13 @@ class PunishmentCalendarEntity(CalendarEntity):
 
 
 def _get_calendar_event(
-    event: dict[str, Any], isPunishment: bool = False
+    event: dict[str, Any], is_punishment: bool = False
 ) -> CalendarEvent:
     """Return a HA CalendarEvent from an Oze class or punishment"""
-    prof = event["profs"][0] if not isPunishment else event["responsableSuivi"]
+    prof = event["profs"][0] if not is_punishment else event["responsableSuivi"]
     return CalendarEvent(
         summary=event["matieres"][0]["libelle"]
-        if not isPunishment
+        if not is_punishment
         else event["typePunition"]["libelle"],
         start=dt.parse_datetime(event["dateDebut"]),
         end=dt.parse_datetime(event["dateFin"]),
