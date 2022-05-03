@@ -1,10 +1,12 @@
-"""BlueprintEntity class"""
+"""OzeEntity class"""
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, NAME, VERSION, ATTRIBUTION
+from .const import DOMAIN, NAME, VERSION
 
 
-class IntegrationBlueprintEntity(CoordinatorEntity):
+class OzeEntity(CoordinatorEntity):
+    """HA coordinator class for Oze integration"""
+
     def __init__(self, coordinator, config_entry):
         super().__init__(coordinator)
         self.config_entry = config_entry
@@ -27,7 +29,6 @@ class IntegrationBlueprintEntity(CoordinatorEntity):
     def extra_state_attributes(self):
         """Return the state attributes."""
         return {
-            "attribution": ATTRIBUTION,
-            "id": str(self.coordinator.data.get("id")),
+            "id": str(self.coordinator.data.get("user_info").get("id")),
             "integration": DOMAIN,
         }

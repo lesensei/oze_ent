@@ -1,32 +1,32 @@
-"""Constants for integration_blueprint."""
+"""Constants for oze_ent."""
 # Base component constants
-NAME = "Integration blueprint"
-DOMAIN = "integration_blueprint"
+NAME = "oZe ENT"
+DOMAIN = "oze_ent"
 DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "0.0.1"
-ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
-ISSUE_URL = "https://github.com/custom-components/integration_blueprint/issues"
+ISSUE_URL = "https://github.com/lesensei/oze_ent/issues"
 
 # Icons
-ICON = "mdi:format-quote-close"
+ICON = "mdi:school"
 
 # Device classes
-BINARY_SENSOR_DEVICE_CLASS = "connectivity"
+BINARY_SENSOR_DEVICE_CLASS = "presence"
 
 # Platforms
 BINARY_SENSOR = "binary_sensor"
+CALENDAR = "calendar"
 SENSOR = "sensor"
-SWITCH = "switch"
-PLATFORMS = [BINARY_SENSOR, SENSOR, SWITCH]
+PLATFORMS = [CALENDAR, SENSOR]
 
 
 # Configuration and options
 CONF_ENABLED = "enabled"
+CONF_URL = "url"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
 
 # Defaults
-DEFAULT_NAME = DOMAIN
+DEFAULT_NAME = "oze"
 
 
 STARTUP_MESSAGE = f"""
