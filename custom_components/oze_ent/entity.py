@@ -18,6 +18,7 @@ class OzeEntity(CoordinatorEntity):
 
     @property
     def device_info(self):
+        """Return information on 'device'"""
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
             "name": NAME,

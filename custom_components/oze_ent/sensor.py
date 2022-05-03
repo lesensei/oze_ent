@@ -18,6 +18,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
     for pupil in coordinator.api.userinfo.get_pupils_from_userinfo(user_info):
         devices.append(HomeworkSensor(coordinator, entry, pupil))
         devices.append(EndOfClassesSensor(coordinator, entry, pupil))
+    for course in coordinator.data.get("grades"):
+        devices.append(GradeSensor(coordinator, entry, course["label"]))
     async_add_devices(devices)
 
 
@@ -231,4 +233,54 @@ class InformationSensor(OzeEntity, SensorEntity):
             "notices": list(
                 filter(lambda n: not n["read"], self.coordinator.data.get("notices"))
             )
+        }
+
+
+class GradeSensor(OzeEntity, SensorEntity):
+    """Oze notification sensor returns the number of unread notifications."""
+
+    def __init__(self, coordinator, config_entry, course: str):
+        super().__init__(coordinator, config_entry)
+        self._course = course
+
+    @property
+    def unique_id(self):
+        return f"{DEFAULT_NAME}_grades_{self._course}"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self._course} mean grade"
+
+    @property
+    def native_value(self):
+        """Return the native value of the sensor."""
+        return list(
+            filter(
+                lambda g: g["label"] == self._course,
+                self.coordinator.data.get("grades"),
+            )
+        )[0]["mean"]
+
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:chart-line"
+
+    @property
+    def extra_state_attributes(self):
+        """Return the device state attributes."""
+        return {
+            "label": list(
+                filter(
+                    lambda g: g["label"] == self._course,
+                    self.coordinator.data.get("grades"),
+                )
+            )[0]["label"],
+            "grades": list(
+                filter(
+                    lambda g: g["label"] == self._course,
+                    self.coordinator.data.get("grades"),
+                )
+            )[0]["grades"],
         }
