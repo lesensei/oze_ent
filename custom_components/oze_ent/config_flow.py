@@ -9,6 +9,7 @@ from .const import (
     CONF_URL,
     CONF_PASSWORD,
     CONF_USERNAME,
+    CONF_UID,
     DOMAIN,
     PLATFORMS,
 )
@@ -23,10 +24,16 @@ class OzeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self):
         """Initialize."""
         self._errors = {}
+        self._uid = None
+        self._etab = None
+        self._prenom = None
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
         self._errors = {}
+        self._uid = None
+        self._etab = None
+        self._prenom = None
 
         # Uncomment the next 2 lines if only a single instance of the integration is allowed:
         # if self._async_current_entries():
@@ -39,8 +46,9 @@ class OzeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 user_input[CONF_PASSWORD],
             )
             if valid:
+                user_input[CONF_UID] = self._uid
                 return self.async_create_entry(
-                    title=user_input[CONF_USERNAME], data=user_input
+                    title=f"{self._prenom} @ {self._etab}", data=user_input
                 )
             else:
                 self._errors["base"] = "auth"
@@ -52,6 +60,7 @@ class OzeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         user_input[CONF_URL] = "https://enc.hauts-de-seine.fr"
         user_input[CONF_USERNAME] = ""
         user_input[CONF_PASSWORD] = ""
+        user_input[CONF_UID] = None
 
         return await self._show_config_form(user_input)
 
@@ -80,6 +89,10 @@ class OzeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             session = async_create_clientsession(self.hass)
             client = OzeApiClient(url, username, password, session)
             await client.connect()
+            user_info = await client.userinfo.get_user_info()
+            self._uid = user_info["id"]
+            self._etab = user_info["etablissements"][0]["label"]
+            self._prenom = user_info["prenom"]
             return True
         except Exception:  # pylint: disable=broad-except
             pass

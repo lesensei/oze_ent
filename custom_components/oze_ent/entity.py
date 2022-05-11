@@ -1,7 +1,9 @@
 """OzeEntity class"""
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceEntryType
 
-from .const import DOMAIN, NAME, VERSION
+from .const import DOMAIN, NAME, VERSION, CONF_UID, DEFAULT_NAME, MANUFACTURER
 
 
 class OzeEntity(CoordinatorEntity):
@@ -14,22 +16,23 @@ class OzeEntity(CoordinatorEntity):
     @property
     def unique_id(self):
         """Return a unique ID to use for this entity."""
-        return self.config_entry.entry_id
+        return f"{DEFAULT_NAME}_{self.config_entry.data.get(CONF_UID)}"
 
     @property
     def device_info(self):
         """Return information on 'device'"""
-        return {
-            "identifiers": {(DOMAIN, self.unique_id)},
-            "name": NAME,
-            "model": VERSION,
-            "manufacturer": NAME,
-        }
+        return DeviceInfo(
+            entry_type=DeviceEntryType.SERVICE,
+            identifiers={(DOMAIN, self.unique_id)},
+            manufacturer=MANUFACTURER,
+            model=NAME,
+            name=NAME,
+        )
 
     @property
     def extra_state_attributes(self):
         """Return the state attributes."""
         return {
-            "id": str(self.coordinator.data.get("user_info").get("id")),
+            "id": self.config_entry.data.get(CONF_UID),
             "integration": DOMAIN,
         }

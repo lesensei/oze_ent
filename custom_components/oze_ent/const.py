@@ -1,10 +1,14 @@
 """Constants for oze_ent."""
+
+from homeassistant.const import Platform
+
 # Base component constants
-NAME = "oZe ENT"
+NAME = "OzE ENT"
 DOMAIN = "oze_ent"
 DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "0.0.1"
 ISSUE_URL = "https://github.com/lesensei/oze_ent/issues"
+MANUFACTURER = "ITOP éducation"
 
 # Icons
 ICON = "mdi:school"
@@ -13,10 +17,7 @@ ICON = "mdi:school"
 BINARY_SENSOR_DEVICE_CLASS = "presence"
 
 # Platforms
-BINARY_SENSOR = "binary_sensor"
-CALENDAR = "calendar"
-SENSOR = "sensor"
-PLATFORMS = [CALENDAR, SENSOR]
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.CALENDAR, Platform.SENSOR]
 
 
 # Configuration and options
@@ -24,6 +25,7 @@ CONF_ENABLED = "enabled"
 CONF_URL = "url"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
+CONF_UID = "uid"
 
 # Defaults
 DEFAULT_NAME = "oze"

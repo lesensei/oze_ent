@@ -20,6 +20,7 @@ from .const import (
     CONF_URL,
     CONF_PASSWORD,
     CONF_USERNAME,
+    CONF_UID,
     DOMAIN,
     PLATFORMS,
     STARTUP_MESSAGE,
@@ -80,26 +81,34 @@ class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> dict:
         """Update data via library."""
-        user_info = await self.api.userinfo.get_user_info()
-        pupils = self.api.userinfo.get_pupils_from_userinfo(user_info)
-        pupil_data = {}
-        for pupil in pupils:
-            pupil_data[pupil["uid"]] = {
-                "homeworks": await self.api.homework.get_homework(pupil),
-                "punishments": await self.api.punishment.get_punishments(
-                    pupil=pupil, start_date=datetime.utcnow()
-                ),
-                "classes": await self.api.event.get_events(
-                    pupil=pupil, start_date=datetime.utcnow()
-                ),
-            }
         try:
+            user_info = await self.api.userinfo.get_user_info()
+            pupils = self.api.userinfo.get_pupils_from_userinfo(user_info)
+            pupil_data = {}
+            for pupil in pupils:
+                pupil_data[pupil["uid"]] = {
+                    "homeworks": await self.api.homework.get_homework(pupil),
+                    "punishments": await self.api.punishment.get_punishments(
+                        pupil=pupil,
+                        start_date=datetime.utcnow().replace(
+                            hour=0, minute=0, second=0, microsecond=0
+                        ),
+                        days=15,
+                    ),
+                    "classes": await self.api.event.get_events(
+                        pupil=pupil,
+                        start_date=datetime.utcnow().replace(
+                            hour=0, minute=0, second=0, microsecond=0
+                        ),
+                        days=15,
+                    ),
+                    "grades": (await self.api.grade.get_grades(pupil))[0],
+                }
             return {
                 "user_info": user_info,
                 "notifications": await self.api.notification.get_notifications(),
                 "notices": await self.api.information.get_informations(),
                 "emails": await self.api.email.get_emails(),
-                "grades": await self.api.grade.get_grades(),
             } | pupil_data
         except Exception as exception:
             raise UpdateFailed() from exception

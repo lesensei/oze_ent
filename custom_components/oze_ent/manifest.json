@@ -1,13 +1,13 @@
 {
   "domain": "oze_ent",
-  "name": "oZe ENT",
+  "name": "OzE ENT",
   "documentation": "https://github.com/lesensei/oze_ent",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/lesensei/oze_ent/issues",
   "version": "0.0.1",
   "config_flow": true,
   "requirements": [
-    "aioze>=0.0.4.1"
+    "aioze>=0.0.5"
   ],
   "codeowners": [
     "@lesensei"

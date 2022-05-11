@@ -31,16 +31,12 @@ class ClassesCalendarEntity(CalendarEntity):
         self.oze = oze
         self._event: CalendarEvent | None = None
         self._pupil = pupil
-
-    @property
-    def unique_id(self):
-        """Return a unique id for this sensor"""
-        return f"{DEFAULT_NAME}_{self._pupil['uid']}_classes"
+        self._attr_unique_id = f"{DEFAULT_NAME}_{self._pupil['uid']}_classes"
 
     @property
     def name(self):
         """Return a descriptive name for this sensor"""
-        return f"{DEFAULT_NAME}_{self._pupil['first_name']}_classes"
+        return f"{self._pupil['first_name']} classes"
 
     @property
     def event(self):
@@ -77,16 +73,12 @@ class PunishmentCalendarEntity(CalendarEntity):
         self.oze = oze
         self._event: CalendarEvent | None = None
         self._pupil = pupil
-
-    @property
-    def unique_id(self):
-        """Return a unique id for this sensor"""
-        return f"{DEFAULT_NAME}_{self._pupil['uid']}_punishments"
+        self._attr_unique_id = f"{DEFAULT_NAME}_{self._pupil['uid']}_punishments"
 
     @property
     def name(self):
         """Return a descriptive name for this sensor"""
-        return f"{DEFAULT_NAME}_{self._pupil['first_name']}_punishments"
+        return f"{self._pupil['first_name']} punishments"
 
     @property
     def event(self):

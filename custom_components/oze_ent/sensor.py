@@ -2,7 +2,7 @@
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.util import dt
 
-from .const import DEFAULT_NAME, DOMAIN, ICON
+from .const import DEFAULT_NAME, DOMAIN, ICON, CONF_UID
 from .entity import OzeEntity
 
 
@@ -18,8 +18,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     for pupil in coordinator.api.userinfo.get_pupils_from_userinfo(user_info):
         devices.append(HomeworkSensor(coordinator, entry, pupil))
         devices.append(EndOfClassesSensor(coordinator, entry, pupil))
-    for course in coordinator.data.get("grades"):
-        devices.append(GradeSensor(coordinator, entry, course["label"]))
+        devices.append(GradeSensor(coordinator, entry, pupil))
     async_add_devices(devices)
 
 
@@ -37,7 +36,7 @@ class HomeworkSensor(OzeEntity, SensorEntity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{DEFAULT_NAME}_{self._pupil['first_name']}_homework_todo"
+        return f"{self._pupil['first_name']} remaining homework tasks"
 
     @property
     def native_value(self):
@@ -94,7 +93,7 @@ class EndOfClassesSensor(OzeEntity, SensorEntity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{DEFAULT_NAME}_{self._pupil['first_name']}_end_of_classes"
+        return f"{self._pupil['first_name']} end of classes"
 
     @property
     def device_class(self):
@@ -135,12 +134,14 @@ class EmailSensor(OzeEntity, SensorEntity):
 
     @property
     def unique_id(self):
-        return f"{DEFAULT_NAME}_emails"
+        return f"{DEFAULT_NAME}_{self.config_entry.data.get(CONF_UID)}_emails"
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{DEFAULT_NAME}_emails"
+        return (
+            f"{DEFAULT_NAME} {self.coordinator.data.get('user_info')['prenom']} emails"
+        )
 
     @property
     def native_value(self):
@@ -172,12 +173,12 @@ class NotificationSensor(OzeEntity, SensorEntity):
 
     @property
     def unique_id(self):
-        return f"{DEFAULT_NAME}_notifications"
+        return f"{DEFAULT_NAME}_{self.config_entry.data.get(CONF_UID)}_notifications"
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{DEFAULT_NAME}_notifications"
+        return f"{DEFAULT_NAME} {self.coordinator.data.get('user_info')['prenom']} notifications"
 
     @property
     def native_value(self):
@@ -207,12 +208,12 @@ class InformationSensor(OzeEntity, SensorEntity):
 
     @property
     def unique_id(self):
-        return f"{DEFAULT_NAME}_info"
+        return f"{DEFAULT_NAME}_{self.config_entry.data.get(CONF_UID)}_information"
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{DEFAULT_NAME}_info"
+        return f"{DEFAULT_NAME} {self.coordinator.data.get('user_info')['prenom']} information"
 
     @property
     def native_value(self):
@@ -239,28 +240,25 @@ class InformationSensor(OzeEntity, SensorEntity):
 class GradeSensor(OzeEntity, SensorEntity):
     """Oze notification sensor returns the number of unread notifications."""
 
-    def __init__(self, coordinator, config_entry, course: str):
+    def __init__(self, coordinator, config_entry, pupil: dict[str, str]):
         super().__init__(coordinator, config_entry)
-        self._course = course
+        self._pupil = pupil
 
     @property
     def unique_id(self):
-        return f"{DEFAULT_NAME}_grades_{self._course}"
+        return f"{DEFAULT_NAME}_{self._pupil['uid']}_grades"
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self._course} mean grade"
+        return f"{self._pupil['first_name']} grades"
 
     @property
     def native_value(self):
         """Return the native value of the sensor."""
-        return list(
-            filter(
-                lambda g: g["label"] == self._course,
-                self.coordinator.data.get("grades"),
-            )
-        )[0]["mean"]
+        return self.coordinator.data.get(self._pupil["uid"]).get("grades")["periodes"][
+            -1
+        ]["global"]["moyennes"]["eleve"]
 
     @property
     def icon(self):
@@ -270,17 +268,4 @@ class GradeSensor(OzeEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         """Return the device state attributes."""
-        return {
-            "label": list(
-                filter(
-                    lambda g: g["label"] == self._course,
-                    self.coordinator.data.get("grades"),
-                )
-            )[0]["label"],
-            "grades": list(
-                filter(
-                    lambda g: g["label"] == self._course,
-                    self.coordinator.data.get("grades"),
-                )
-            )[0]["grades"],
-        }
+        return self.coordinator.data.get(self._pupil["uid"]).get("grades")
