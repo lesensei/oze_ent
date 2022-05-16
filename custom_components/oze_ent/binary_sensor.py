@@ -40,7 +40,8 @@ class ClassDayBinarySensor(OzeEntity, BinarySensorEntity):
         # now = datetime.now(tz.gettz("Europe/Paris"))
         events = self.coordinator.data.get(self._pupil["uid"]).get("classes")
         current_events = filter(
-            lambda event: parser.parse(event["dateDebut"]).date() == dt.now().date(),
+            lambda event: parser.parse(event["dateDebut"]).date() == dt.now().date()
+            and event["_deletedStatus"] == 0,
             events,
         )
         try:

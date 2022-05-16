@@ -59,7 +59,11 @@ class ClassesCalendarEntity(CalendarEntity):
         events = self.oze.data.get(self._pupil["uid"]).get("classes")
         nowtime = datetime.now(tz.gettz("Europe/Paris"))
         events = list(
-            filter(lambda event: nowtime <= parser.parse(event["dateFin"]), events)
+            filter(
+                lambda event: nowtime <= parser.parse(event["dateFin"])
+                and event["_deletedStatus"] == 0,
+                events,
+            )
         )
         events.sort(key=lambda event: event["dateDebut"])
         self._event = _get_calendar_event(events[0]) if len(events) > 0 else None

@@ -106,7 +106,8 @@ class EndOfClassesSensor(OzeEntity, SensorEntity):
         classes = self.coordinator.data.get(self._pupil["uid"]).get("classes")
         classes = list(
             filter(
-                lambda cl: dt.parse_datetime(cl["dateFin"]).date() == dt.now().date(),
+                lambda cl: dt.parse_datetime(cl["dateFin"]).date() == dt.now().date()
+                and cl["_deletedStatus"] == 0,
                 classes,
             )
         )
